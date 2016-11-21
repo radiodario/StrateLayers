@@ -1,0 +1,5 @@
+obj
+*.pyc
+build/*.app
+build/*.build
+bin/*.app
