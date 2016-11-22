@@ -9,6 +9,7 @@ in float vertColor[];
 uniform mat4 projectionMatrix;
 uniform float imgWidth, imgHeight;
 uniform float size;
+uniform float lightness;
 out vec2 Vertex_UV;
 out vec3 Colour_comp;
 
@@ -42,7 +43,7 @@ void main()
   Colour_comp = hsv2rgb(vec3(
       1.0 - vertColor[0],
       vertColor[0],
-      1.0
+      lightness
       ));
 
   gl_Position = p1;

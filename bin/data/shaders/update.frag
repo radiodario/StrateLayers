@@ -205,6 +205,7 @@ void main()
     // move
     pos.xyz += elapsed * vel;
 
+    //pos.x += force.x;
     //pos.y += force.y;
 
     posOut = pos;

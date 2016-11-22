@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxGpuParticles.h"
 #include "ofxGui.h"
+#include "ofxOsc.h"
 
 #define _PROGRAMMABLE_RENDERER
 
@@ -28,6 +29,8 @@ class ofApp : public ofBaseApp{
   private:
     void onParticlesUpdate(ofShader& shader);
     void onParticlesDraw(ofShader& shader);
+    void handleOscMessages();
+
     ofEasyCam cam;
     ofImage particleTexture;
     ofxGpuParticles particles;
@@ -41,6 +44,12 @@ class ofApp : public ofBaseApp{
     ofParameter<float> dimY;
     ofParameter<float> multX;
     ofParameter<float> multY;
+    ofParameter<float> history;
+    ofParameter<float> particleAlpha;
+    ofParameter<float> particleLightness;
+    ofFbo fbo;
+    ofxOscReceiver receive;
+    bool saveImage = false;
 
     float stepItFuck(unsigned y, int n, unsigned h) {
       float step = h / n;

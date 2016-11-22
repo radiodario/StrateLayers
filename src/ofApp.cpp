@@ -2,9 +2,15 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-  ofBackground(0);
+  //ofBackground(0);
   ofSetFrameRate(60);
 
+  fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB);
+  fbo.begin();
+  ofBackground(255, 255, 255);
+  fbo.end();
+
+  receive.setup(5001);
   gui.setup();
   gui.add(particleSize.set("Particle Size", 1, 0, 10));
   gui.add(damping.set("Damping", 0.5, 0, 1));
@@ -15,6 +21,9 @@ void ofApp::setup(){
   gui.add(dimY.set("Zoom Y", 10, 1, 1000));
   gui.add(multX.set("mult X", 0.1, 0, 1));
   gui.add(multY.set("mult Y", 1, 0, 1));
+  gui.add(history.set("history bg", 0.2, 0, 1));
+  gui.add(particleAlpha.set("particle Alpha", 0.3, 0, 1));
+  gui.add(particleLightness.set("particle Lightness", 0.3, 0, 1));
 
   unsigned w = 1024;
   unsigned h = 1024;
@@ -33,7 +42,7 @@ void ofApp::setup(){
       particlePosns[idx * 4] = wWidth * x / (float)w - (wWidth/2);
       particlePosns[idx * 4 + 1] = wHeight * y / (float)h - (wHeight/2);
       particlePosns[idx * 4 + 2] = 0.f;
-      particlePosns[idx * 4 + 3] = stepItFuck(y, 4, h) / h; // dummy
+      particlePosns[idx * 4 + 3] = stepItFuck(y, 1, h) / h; // dummy
     }
   }
   particles.loadDataTexture(ofxGpuParticles::POSITION, particlePosns);
@@ -52,17 +61,34 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
   ofSetWindowTitle(ofToString(ofGetFrameRate(), 2));
+  handleOscMessages();
   particles.update();
 }
 
+void ofApp::handleOscMessages() {
+
+  while (receive.hasWaitingMessages()) {
+    ofxOscMessage m;
+    receive.getNextMessage(&m);
+    string msgAddress = m.getAddress();
+
+    if (msgAddress == "/a1") {
+      damping = 1 - m.getArgAsFloat(1);
+      forceGain = m.getArgAsFloat(2) * 10000;
+      dimY = 1 + (m.getArgAsFloat(3) * 1000);
+    }
+  }
+}
+
 void ofApp::onParticlesUpdate(ofShader& shader) {
+  float elapsed = ofClamp(ofGetLastFrameTime(), 0, 0.1);
   float w = ofGetWidth() * 1.f;
   float h = ofGetHeight() * 1.f;
   ofVec2f resolution(w, h);
   shader.setUniform2fv("resolution", resolution.getPtr());
   ofVec3f mouse(ofGetMouseX() - .5f * ofGetWidth(), .5f * ofGetHeight() - ofGetMouseY() , 0.f);
   shader.setUniform3fv("mouse", mouse.getPtr());
-  shader.setUniform1f("elapsed", ofGetLastFrameTime());
+  shader.setUniform1f("elapsed", elapsed);
   shader.setUniform1f("time", ofGetElapsedTimeMillis());
   shader.setUniform1f("damping", damping);
   shader.setUniform1f("forceGain", forceGain);
@@ -79,15 +105,34 @@ void ofApp::onParticlesDraw(ofShader& shader) {
   shader.setUniform1f("time", ofGetElapsedTimeMillis());
   shader.setUniform2f("timeStep", timeStepX, timeStepY);
   shader.setUniform2f("dimDiv", dimX, dimY);
+  shader.setUniform1f("particleAlpha", particleAlpha);
+  shader.setUniform1f("lightness", particleLightness);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+  ofBackground(255, 255, 255);
+  float alpha = (1 - history) * 255;
+  fbo.begin();
+  ofEnableAlphaBlending();
+  ofSetColor(0, 0, 0, alpha);
+  ofFill();
+  ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+  ofDisableAlphaBlending();
   cam.begin();
   ofEnableBlendMode(OF_BLENDMODE_ADD);
   particles.draw();
   ofDisableBlendMode();
   cam.end();
+  fbo.end();
+  ofSetColor(255, 255, 255);
+  fbo.draw(0, 0);
+  if (saveImage) {
+    ofImage image;
+    image.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
+    image.saveImage("strate_layers_" + ofGetTimestampString() + ".png");
+    saveImage = false;
+  }
   gui.draw();
 }
 
@@ -96,7 +141,9 @@ void ofApp::keyPressed(int key){
   if (key == 's') {
     setup();
   }
-
+  if (key == ' ') {
+    saveImage = true;
+  }
 }
 
 //--------------------------------------------------------------
