@@ -1,7 +1,7 @@
 #version 330
 
 layout(points) in;
-layout(triangle_strip, max_vertices = 10) out;
+layout(triangle_strip, max_vertices = 4) out;
 
 in vec2 texCoordFromVertex[];
 in float vertColor[];
@@ -61,5 +61,5 @@ void main()
   gl_Position = p4;
   Vertex_UV = vec2(1.0, 1.0);
   EmitVertex();
-
+  EndPrimitive();
 }

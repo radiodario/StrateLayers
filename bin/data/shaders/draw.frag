@@ -9,5 +9,6 @@ uniform float particleAlpha;
 void main()
 {
   vec4 spriteTex = texture(uTexture, Vertex_UV.xy);
+  //fragColor = vec4(Colour_comp, particleAlpha);
   fragColor = spriteTex * vec4(Colour_comp, particleAlpha);
 }

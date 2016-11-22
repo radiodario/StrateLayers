@@ -42,7 +42,7 @@ void ofApp::setup(){
       particlePosns[idx * 4] = wWidth * x / (float)w - (wWidth/2);
       particlePosns[idx * 4 + 1] = wHeight * y / (float)h - (wHeight/2);
       particlePosns[idx * 4 + 2] = 0.f;
-      particlePosns[idx * 4 + 3] = stepItFuck(y, 1, h) / h; // dummy
+      particlePosns[idx * 4 + 3] = stepItFuck(y, 4, h) / h; // dummy
     }
   }
   particles.loadDataTexture(ofxGpuParticles::POSITION, particlePosns);
@@ -72,10 +72,11 @@ void ofApp::handleOscMessages() {
     receive.getNextMessage(&m);
     string msgAddress = m.getAddress();
 
-    if (msgAddress == "/a1") {
-      damping = 1 - m.getArgAsFloat(1);
+    if (msgAddress == "/Audio/A0") {
+      damping = 1 - ofMap(m.getArgAsFloat(1), 0, 1, 0, 1.5);
       forceGain = m.getArgAsFloat(2) * 10000;
-      dimY = 1 + (m.getArgAsFloat(3) * 1000);
+      dimY = 1 + (m.getArgAsFloat(3) * 1500);
+      dimX = 1 + (m.getArgAsFloat(4) * 1500);
     }
   }
 }
