@@ -5,8 +5,8 @@ int main( ){
 #ifdef _PROGRAMMABLE_RENDERER
   ofGLFWWindowSettings settings;
   settings.setGLVersion(4, 1);
-  settings.width = 1024;
-  settings.height = 768;
+  settings.width = 1920;
+  settings.height = 1080;
   //settings.windowMode = OF_FULLSCREEN;
 
   ofCreateWindow(settings);

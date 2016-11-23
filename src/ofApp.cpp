@@ -10,6 +10,9 @@ void ofApp::setup(){
   ofBackground(255, 255, 255);
   fbo.end();
 
+  vidRecorder.setVideoCodec("mpeg4");
+  vidRecorder.setVideoBitrate("80192k");
+
   receive.setup(5001);
   gui.setup();
   gui.add(particleSize.set("Particle Size", 1, 0, 10));
@@ -55,7 +58,7 @@ void ofApp::setup(){
   ofAddListener(particles.updateEvent, this, &ofApp::onParticlesUpdate);
   ofAddListener(particles.drawEvent, this, &ofApp::onParticlesDraw);
   ofDisableArbTex();
-  particleTexture.load("circle-64.png");
+  particleTexture.load("trump.png");
 }
 
 //--------------------------------------------------------------
@@ -121,13 +124,20 @@ void ofApp::draw(){
   ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
   ofDisableAlphaBlending();
   cam.begin();
-  ofEnableBlendMode(OF_BLENDMODE_ADD);
+  ofEnableBlendMode(OF_BLENDMODE_ALPHA);
   particles.draw();
   ofDisableBlendMode();
   cam.end();
   fbo.end();
   ofSetColor(255, 255, 255);
   fbo.draw(0, 0);
+  if (recording) {
+	fbo.readToPixels(pixels);
+	bool success = vidRecorder.addFrame(pixels);
+	if (!success) {
+		ofLogWarning("this frame was not added!");
+	}
+  }
   if (saveImage) {
     ofImage image;
     image.grabScreen(0, 0, ofGetWidth(), ofGetHeight());
@@ -149,7 +159,23 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+	if (key == 'r') {
+		recording = !recording;
+		if (recording && !vidRecorder.isInitialized()) {
+			vidRecorder.setup("capture" + ofGetTimestampString() + ".mp4", ofGetWidth(), ofGetHeight(), 30); // no audio
+			vidRecorder.start();
+		}
+		else if (!recording && vidRecorder.isInitialized()) {
+			vidRecorder.setPaused(true);
+		}
+		else if (recording && vidRecorder.isInitialized()) {
+			vidRecorder.setPaused(false);
+		}
+	}
+	if (key == 'c') {
+		recording = false;
+		vidRecorder.close();
+	}
 }
 
 //--------------------------------------------------------------

@@ -2,4 +2,4 @@ ofxGpuParticles
 ofxGui
 ofxOsc
 ofxPostProcessing
-ofxSyphon
+ofxVideoRecorder

@@ -4,6 +4,7 @@
 #include "ofxGpuParticles.h"
 #include "ofxGui.h"
 #include "ofxOsc.h"
+#include "ofxVideoRecorder.h"
 
 #define _PROGRAMMABLE_RENDERER
 
@@ -50,6 +51,11 @@ class ofApp : public ofBaseApp{
     ofFbo fbo;
     ofxOscReceiver receive;
     bool saveImage = false;
+
+	ofPixels pixels;
+	bool recording = false;
+
+	ofxVideoRecorder vidRecorder;
 
     float stepItFuck(unsigned y, int n, unsigned h) {
       float step = h / n;
